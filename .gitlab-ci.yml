@@ -1,0 +1,29 @@
+build:
+  stage: build
+  image: golang:alpine
+  script:
+    - go build discloudflR.go
+    - ./discloudflR | grep "Find real ip behind cloudflaire"
+  artifacts:
+    paths:
+      - discloudflR
+    expire_in: 1 week
+
+
+docker_build:
+  stage: build
+  image: docker:stable
+  script:
+    - docker build -t discloudflr:latest --no-cache .
+    - docker run --rm discloudflr:latest | grep "Find real ip behind cloudflaire"
+  only:
+    - master
+
+test:
+  stage: test
+  image: docker:stable
+  script:
+    - docker run --rm discloudflr:latest | grep "Find real ip behind cloudflaire"
+    - docker rmi -f discloudflr:latest
+  only:
+    - master
